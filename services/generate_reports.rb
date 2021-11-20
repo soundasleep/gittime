@@ -29,7 +29,7 @@ class GenerateReports
       revisions.map do |revision|
         [ revision[:id], revision[:author], revision[:author_date], revision[:source], revision[:message] ]
       end
-    end.flatten(1)
+    end.flatten(1).sort { |a, b| [a[2], a[3]] <=> [b[2], b[3]] }
   end
 
   def to_csv(arrays)

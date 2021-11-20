@@ -31,7 +31,7 @@ class Source
             committer: csv[3],
             committer_date: DateTime.parse(csv[4]),
             message: csv[5],
-            source: git,
+            source: "git:#{git}",
           }
         end
       end
@@ -41,15 +41,21 @@ class Source
       result
     elsif svn
       result = []
+      current_result = {}
       stream_command("#{svn_log_command}") do |line|
-        if data = line.match(/r([0-9]+) \| ([^ ]+) \| ([^\|]+) \(([^\|]+)\) \| /)
-          result << {
+        line.strip!
+        if data = line.match(/r([0-9]+) \| ([^ ]+) \| ([^\|]+) \(([^\|]+)\) \| (.*)/)
+          current_result = {
             id: data[1],
             author: data[2],
             author_date: DateTime.parse(data[3]),
-            message: data[4],
-            source: svn,
+            message: data[5],
+            source: "svn:#{svn}",
           }
+        elsif data = line.match(/(.+)/) && current_result[:id]
+          current_result[:message] = line
+          result << current_result
+          current_result = {}
         end
       end
       LOG.info "Found #{result.count} revisions in svn:#{svn}"
