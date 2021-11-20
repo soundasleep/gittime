@@ -29,6 +29,8 @@ Will generate the following files:
 
 ## Config file format
 
+You can create a new config file by using the `--init` flag, or copy the sample file below.
+
 ```yaml
 # Each source can have a default before/after set
 default_source:
