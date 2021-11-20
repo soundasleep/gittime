@@ -3,6 +3,8 @@ class CommandLineRunner
 
   def initialize(options:)
     @options = options
+
+    fail "Need config specified with --config flag" unless options[:config]
   end
 
   def call

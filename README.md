@@ -59,3 +59,9 @@ authors:
     - jevon.wright
   # ... add more as necessary
 ```
+
+## Testing
+
+```
+bundle exec rake
+```

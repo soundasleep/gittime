@@ -13,11 +13,13 @@ class GenerateReports
   def call
     FileUtils.mkdir_p(options[:output])
 
-    write_report! "revisions.csv", REVISIONS_HEADERS, revisions
-    write_report! "revisions-with-authors.csv", REVISIONS_HEADERS, revisions_with_authors
-    write_report! "blocks.csv", BLOCKS_HEADERS, blocks
-    write_report! "blocks-by-month.csv", BLOCKS_BY_MONTHS_HEADERS, blocks_by_month
-    write_report! "work-by-month.csv", WORK_BY_MONTHS_HEADERS, work_by_month
+    reports = []
+    reports << write_report!("revisions.csv", REVISIONS_HEADERS, revisions)
+    reports << write_report!("revisions-with-authors.csv", REVISIONS_HEADERS, revisions_with_authors)
+    reports << write_report!("blocks.csv", BLOCKS_HEADERS, blocks)
+    reports << write_report!("blocks-by-month.csv", BLOCKS_BY_MONTHS_HEADERS, blocks_by_month)
+    reports << write_report!("work-by-month.csv", WORK_BY_MONTHS_HEADERS, work_by_month)
+    reports
   end
 
   private
@@ -25,6 +27,12 @@ class GenerateReports
   def write_report!(filename, headers, data)
     File.write report_path(filename), to_csv([headers] + data)
     LOG.info "Wrote #{report_path(filename)}"
+
+    {
+      filename: filename,
+      headers: headers,
+      data: data,
+    }
   end
 
   def report_path(file)
