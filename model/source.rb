@@ -18,6 +18,7 @@ class Source
     fail "No source found for #{yaml}" unless git || svn
   end
 
+  # A list of points of times
   def revisions
     @revisions ||= if git
       LOG.info "Cloning #{git} into #{temp_repository_path}..."
@@ -31,7 +32,7 @@ class Source
             committer: csv[3],
             committer_date: DateTime.parse(csv[4]),
             message: csv[5],
-            source: "git:#{git}",
+            source: self,
           }
         end
       end
@@ -50,7 +51,7 @@ class Source
             author: data[2],
             author_date: DateTime.parse(data[3]),
             message: data[5],
-            source: "svn:#{svn}",
+            source: self,
           }
         elsif data = line.match(/(.+)/) && current_result[:id]
           current_result[:message] = line
@@ -60,6 +61,16 @@ class Source
       end
       LOG.info "Found #{result.count} revisions in svn:#{svn}"
       result
+    else
+      fail "Unknown source #{self}"
+    end
+  end
+
+  def label
+    if git
+      "git:#{git}"
+    elsif svn
+      "svn:#{svn}"
     else
       fail "Unknown source #{self}"
     end

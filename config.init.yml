@@ -8,4 +8,7 @@ sources:
     svn: https://github.com/soundasleep/svntime
   # -
   #   git: https://github.com/soundasleep/gittime
-
+authors:
+  jevon:
+    - jevon@*
+    - jevon.wright
