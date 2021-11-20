@@ -27,8 +27,6 @@ Will generate the following files:
 | `blocks-by-month.csv` | Blocks split across month boundaries |
 | `work-by-month.csv` | The number of seconds in each block, per month and per author |
 
-* `output/revisions.csv` - a list of all revis
-
 ## Config file format
 
 ```yaml
