@@ -1,10 +1,11 @@
 class ConfigFile
-  attr_reader :sources, :authors
+  attr_reader :sources, :authors, :default_source
 
   def initialize(yaml)
     fail "No sources defined" unless yaml["sources"]
 
-    @sources = yaml["sources"].map { |row| Source.new(row) }
+    @default_source = DefaultSource.new(yaml["default_source"])
+    @sources = yaml["sources"].map { |row| Source.new(row, @default_source) }
     @authors = yaml["authors"]
   end
 

@@ -16,6 +16,8 @@ class GenerateReports
     write_report! "revisions.csv", REVISIONS_HEADERS, revisions
     write_report! "revisions-with-authors.csv", REVISIONS_HEADERS, revisions_with_authors
     write_report! "blocks.csv", BLOCKS_HEADERS, blocks
+    write_report! "blocks-by-month.csv", BLOCKS_BY_MONTHS_HEADERS, blocks_by_month
+    write_report! "work-by-month.csv", WORK_BY_MONTHS_HEADERS, work_by_month
   end
 
   private
@@ -33,9 +35,7 @@ class GenerateReports
 
   # A list of points of times
   def revisions
-    @revisions ||= revisions_data.map do |row|
-      [ row[:id], row[:author], row[:author_date], row[:source].label, row[:message] ]
-    end
+    @revisions ||= revisions_data.map { |row| print_revision_row(row) }
   end
 
   def revisions_data
@@ -46,9 +46,7 @@ class GenerateReports
 
   # A list of revisions with mapped authors, and duplicate rows removed
   def revisions_with_authors
-    @revisions_with_authors ||= revisions_with_authors_data.map do |row|
-      [ row[:id], row[:author_label], row[:author_date], row[:source].label, row[:message] ]
-    end
+    @revisions_with_authors ||= revisions_with_authors_data.map { |row| print_revision_row(row) }
   end
 
   def revisions_with_authors_data
@@ -58,18 +56,21 @@ class GenerateReports
     end.uniq { |row| [row[:author_label], row[:author_date].to_time.to_i] }
   end
 
+  def print_revision_row(row)
+    [ row[:id], row[:author_label] || row[:author], row[:author_date], row[:source].label, row[:message] ]
+  end
+
   BLOCKS_HEADERS = ["Start date", "End date", "Author", "Start ID", "End ID", "Start Source", "End Source", "Revisions"]
 
   # A list of continuous blocks, by author
   def blocks
-    @blocks ||= blocks_data.map do |row|
-      [ row[:start], row[:end], row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
-    end
+    @blocks ||= blocks_data.map { |row| print_block_row(row) }
   end
 
   def blocks_data
     @blocks_data ||= begin
       result = []
+
       current_author_blocks = {} # hash of author_label => data
       revisions_with_authors_data.each do |row|
         key = row[:author_label]
@@ -100,6 +101,41 @@ class GenerateReports
     end.sort { |a, b| [a[:author_label], a[:start]] <=> [b[:author_label], b[:start]] }
   end
 
+  BLOCKS_BY_MONTHS_HEADERS = ["Start date", "End date", "Author", "Month", "Year"]
+
+  # Split multi-month blocks into individual blocks
+  def blocks_by_month
+    @blocks_by_month ||= blocks_by_month_data.map do |row|
+      [ row[:start], row[:end], row[:author_label], row[:month], row[:year] ]
+    end
+  end
+
+  def blocks_by_month_data
+    @blocks_by_month_data ||= begin
+      result = []
+      blocks_data.each do |block|
+        while print_month(block[:start]) != print_month(block[:end])
+          result << {
+            start: block[:start],
+            end: block[:start].end_of_month,
+            author_label: block[:author_label],
+            month: block[:start].strftime("%-m"),
+            year: block[:start].strftime("%Y"),
+          }
+          block[:start] = (block[:start] + 1.month).beginning_of_month
+        end
+        result << {
+          start: block[:start],
+          end: block[:end],
+          author_label: block[:author_label],
+          month: block[:start].strftime("%-m"),
+          year: block[:start].strftime("%Y"),
+        }
+      end
+      result
+    end.sort { |a, b| [a[:author_label], a[:start]] <=> [b[:author_label], b[:start]] }
+  end
+
   def new_current_author_block(row)
     {
       start: row[:author_date] - row[:source].before.seconds,
@@ -111,6 +147,67 @@ class GenerateReports
       end_source: row[:source],
       count: 1,
     }
+  end
+
+  def print_month(date)
+    date.strftime("%m-%y")
+  end
+
+  def print_block_row(row)
+    [ row[:start], row[:end], row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
+  end
+
+  WORK_BY_MONTHS_HEADERS = ["Month starting", "Author", "Seconds", "Blocks", "Start date", "End date"]
+
+  # Number of seconds of "work" done by each author per month
+  def work_by_month
+    @work_by_month ||= work_by_month_data.map do |row|
+      [ row[:start].beginning_of_month, row[:author_label], row[:seconds], row[:blocks], row[:start], row[:end] ]
+    end
+  end
+
+  def work_by_month_data
+    @work_by_month_data ||= begin
+      result = []
+      current_work_blocks = {}
+
+      blocks_by_month_data.each do |block|
+        key = block[:author_label]
+
+        if current_work_blocks[key].nil?
+          current_work_blocks[key] = new_current_work_block(block)
+        else
+          if block[:start].beginning_of_month == current_work_blocks[key][:start].beginning_of_month
+            current_work_blocks[key][:end] = block[:end]
+            current_work_blocks[key][:seconds] += block_seconds(block)
+            current_work_blocks[key][:blocks] += 1
+          else
+            result << current_work_blocks[key]
+            current_work_blocks[key] = new_current_work_block(block)
+          end
+        end
+      end
+
+      current_work_blocks.each do |_, row|
+        result << row
+      end
+
+      result
+    end
+  end
+
+  def new_current_work_block(block)
+    {
+      start: block[:start],
+      end: block[:end],
+      author_label: block[:author_label],
+      seconds: block_seconds(block),
+      blocks: 1,
+    }
+  end
+
+  def block_seconds(block)
+    block[:end].to_time.to_i - block[:start].to_time.to_i
   end
 
   def unique_author_labels

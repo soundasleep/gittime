@@ -1,20 +1,22 @@
-require "chronic_duration"
 require "csv"
 
 class Source
   include CommandLineHelper
+  include SecondsHelper
 
   attr_reader :git, :svn
   attr_reader :name, :before, :after
 
-  def initialize(yaml)
+  def initialize(yaml, default_source)
     @git = yaml["git"]
     @svn = yaml["svn"]
     @name = yaml["name"] || (@git || @svn).split("/").last
-    @before = seconds_in(yaml["before"]) || default_before
-    @after = seconds_in(yaml["after"]) || default_after
+    @before = seconds_in(yaml["before"]) || default_source.before
+    @after = seconds_in(yaml["after"]) || default_source.after
 
     fail "No source found for #{yaml}" unless git || svn
+    fail "Cannot have <= 0 before seconds for #{yaml}" if @before <= 0
+    fail "Cannot have <= 0 after seconds for #{yaml}" if @after <= 0
   end
 
   def revisions
@@ -75,11 +77,6 @@ class Source
   end
 
   private
-
-  def seconds_in(string)
-    return 0 if string.blank?
-    ChronicDuration::parse(string)
-  end
 
   def temp_repository_path
     @temp_repository_path ||= "#{Dir.tmpdir}/#{name}-#{Time.now.to_i}"

@@ -1,17 +1,26 @@
+# Each source can have a default before/after set
+default_source:
+  before: 1 hour
+  after: 1 hour
+
+# List all the different sources you want to parse
+# Available sources:
+#   - git
+#   - svn
 sources:
   -
     git: https://github.com/soundasleep/svntime
+    # You can customise before/after here, too, based on your commit style
     before: 2 hours
-    between: 2 hours
-    after: 6 hours
+    after: 30 seconds
   -
     svn: https://github.com/soundasleep/svntime
-    before: 2 hours
-    between: 2 hours
-    after: 6 hours
-  # -
-  #   git: https://github.com/soundasleep/gittime
+  # ... add more as necessary
+
+# Finally, different sources may have different ways of expressing
+# authors. Use this to map source authors to a consistent author label.
 authors:
   jevon:
     - jevon@*
     - jevon.wright
+  # ... add more as necessary
