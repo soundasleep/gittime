@@ -24,16 +24,21 @@ class Source
       LOG.info "Cloning #{git} into #{temp_repository_path}..."
       result = []
       stream_command("#{git_clone_command} && #{git_log_command}") do |line|
-        CSV.parse(line).each do |csv|
-          result << {
-            id: csv[0],
-            author: csv[1],
-            author_date: DateTime.parse(csv[2]),
-            committer: csv[3],
-            committer_date: DateTime.parse(csv[4]),
-            message: csv[5],
-            source: self,
-          }
+        line = line.gsub("\"", "'") # As far as I can tell, git log can't output valid CSV with " in subjects
+        begin
+          CSV.parse(line).each do |csv|
+            result << {
+              id: csv[0],
+              author: csv[1],
+              author_date: DateTime.parse(csv[2]),
+              committer: csv[3],
+              committer_date: DateTime.parse(csv[4]),
+              message: csv[5],
+              source: self,
+            }
+          end
+        rescue CSV::MalformedCSVError
+          LOG.warn "Ignoring CSV malformed row: #{line}"
         end
       end
       LOG.info "Found #{result.count} revisions in git:#{git}"
@@ -83,7 +88,7 @@ class Source
   end
 
   def git_clone_command
-    "git clone #{git} #{temp_repository_path} -q"
+    "git clone #{git} #{temp_repository_path}"
   end
 
   def git_log_command
