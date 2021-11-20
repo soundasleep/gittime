@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'activesupport'
 gem 'logger'
 gem 'logger-colors'
 gem 'rake'

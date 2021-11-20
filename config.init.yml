@@ -3,9 +3,12 @@ sources:
     git: https://github.com/soundasleep/svntime
     before: 2 hours
     between: 2 hours
-    after: 1 hour
+    after: 6 hours
   -
     svn: https://github.com/soundasleep/svntime
+    before: 2 hours
+    between: 2 hours
+    after: 6 hours
   # -
   #   git: https://github.com/soundasleep/gittime
 authors:

@@ -5,20 +5,18 @@ class Source
   include CommandLineHelper
 
   attr_reader :git, :svn
-  attr_reader :name, :before, :between, :after
+  attr_reader :name, :before, :after
 
   def initialize(yaml)
     @git = yaml["git"]
     @svn = yaml["svn"]
     @name = yaml["name"] || (@git || @svn).split("/").last
     @before = seconds_in(yaml["before"]) || default_before
-    @between = seconds_in(yaml["between"]) || default_between
     @after = seconds_in(yaml["after"]) || default_after
 
     fail "No source found for #{yaml}" unless git || svn
   end
 
-  # A list of points of times
   def revisions
     @revisions ||= if git
       LOG.info "Cloning #{git} into #{temp_repository_path}..."
