@@ -15,6 +15,6 @@ class InitConfigFile
   private
 
   def default_config_file
-    File.read("config.init.yml")
+    File.read(File.join(File.dirname(__FILE__), '..', "config.init.yml"))
   end
 end
