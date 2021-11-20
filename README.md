@@ -6,7 +6,7 @@ Spiritual successor to [svntime](https://github.com/soundasleep/svntime)
 
 ## Requirements
 
-* Ruby
+* Ruby 2.6+ or 3.0+
 * `git` if you want to use git sources
 * `svn` if you want to use subversion sources
 
