@@ -4,8 +4,9 @@ def default_options
   {
     init: false,
     overwrite: false,
-    level: "info",
     output: "output/",
+    date_format: "%F %T",
+    level: "info",
     colours: true,
   }
 end
@@ -33,9 +34,16 @@ def load_command_line_options
       options[:overwrite] = true
     end
 
+    opts.separator ""
+    opts.separator "Report options:"
+
     opts.on("-o", "--output DIR/", "Write reports to this directory (default: `#{default_options[:output]}`)") do |path|
       fail "Expected / at end of output path" unless path[-1] == "/"
       options[:output] = path
+    end
+
+    opts.on("--date_format FORMAT", "Date format to print using strftime (default: `#{default_options[:date_format]}`)") do |string|
+      options[:date_format] = string
     end
 
     opts.separator ""

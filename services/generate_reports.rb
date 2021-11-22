@@ -3,6 +3,8 @@ require "csv"
 require "active_support/time"
 
 class GenerateReports
+  include DateHelper
+
   attr_reader :config, :options
 
   def initialize(config:, options:)
@@ -65,7 +67,7 @@ class GenerateReports
   end
 
   def print_revision_row(row)
-    [ row[:id], row[:author_label] || row[:author], row[:author_date], row[:source].label, row[:message] ]
+    [ row[:id], row[:author_label] || row[:author], print_date(row[:author_date]), row[:source].label, row[:message] ]
   end
 
   BLOCKS_HEADERS = ["Start date", "End date", "Author", "Start ID", "End ID", "Start Source", "End Source", "Revisions"]
@@ -114,7 +116,7 @@ class GenerateReports
   # Split multi-month blocks into individual blocks
   def blocks_by_month
     @blocks_by_month ||= blocks_by_month_data.map do |row|
-      [ row[:start], row[:end], row[:author_label], row[:month], row[:year] ]
+      [ print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:month], row[:year] ]
     end
   end
 
@@ -162,7 +164,7 @@ class GenerateReports
   end
 
   def print_block_row(row)
-    [ row[:start], row[:end], row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
+    [ print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
   end
 
   WORK_BY_MONTHS_HEADERS = ["Month starting", "Author", "Seconds", "Blocks", "Start date", "End date"]
@@ -170,7 +172,7 @@ class GenerateReports
   # Number of seconds of "work" done by each author per month
   def work_by_month
     @work_by_month ||= work_by_month_data.map do |row|
-      [ row[:start].beginning_of_month, row[:author_label], row[:seconds], row[:blocks], row[:start], row[:end] ]
+      [ print_date(row[:start].beginning_of_month), row[:author_label], row[:seconds], row[:blocks], print_date(row[:start]), print_date(row[:end]) ]
     end
   end
 
