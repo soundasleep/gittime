@@ -6,6 +6,7 @@ gem 'logger-colors'
 gem 'rake'
 
 gem 'chronic_duration'
+gem 'tzinfo-data'
 
 group :development, :test do
   gem 'rspec'

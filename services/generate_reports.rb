@@ -120,6 +120,10 @@ class GenerateReports
     end
   end
 
+  def in_local_tz(date)
+    date.in_time_zone(options[:time_zone])
+  end
+
   def blocks_by_month_data
     @blocks_by_month_data ||= begin
       result = []
@@ -129,8 +133,8 @@ class GenerateReports
             start: block[:start],
             end: block[:start].end_of_month,
             author_label: block[:author_label],
-            month: block[:start].strftime("%-m"),
-            year: block[:start].strftime("%Y"),
+            month: in_local_tz(block[:start]).strftime("%-m"),
+            year: in_local_tz(block[:start]).strftime("%Y"),
           }
           block[:start] = (block[:start] + 1.month).beginning_of_month
         end
@@ -138,8 +142,8 @@ class GenerateReports
           start: block[:start],
           end: block[:end],
           author_label: block[:author_label],
-          month: block[:start].strftime("%-m"),
-          year: block[:start].strftime("%Y"),
+          month: in_local_tz(block[:start]).strftime("%-m"),
+          year: in_local_tz(block[:start]).strftime("%Y"),
         }
       end
       result
@@ -160,7 +164,7 @@ class GenerateReports
   end
 
   def print_month(date)
-    date.strftime("%m-%y")
+    in_local_tz(date).strftime("%m-%y")
   end
 
   def print_block_row(row)

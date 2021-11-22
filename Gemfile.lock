@@ -36,6 +36,8 @@ GEM
     rspec-support (3.10.3)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
+    tzinfo-data (1.2021.5)
+      tzinfo (>= 1.0.0)
     zeitwerk (2.5.1)
 
 PLATFORMS
@@ -51,6 +53,7 @@ DEPENDENCIES
   rake
   rspec
   rspec-collection_matchers
+  tzinfo-data
 
 BUNDLED WITH
    2.2.30

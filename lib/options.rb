@@ -6,6 +6,7 @@ def default_options
     overwrite: false,
     output: "output/",
     date_format: "%F %T",
+    time_zone: "UTC",
     level: "info",
     colours: true,
   }
@@ -44,6 +45,10 @@ def load_command_line_options
 
     opts.on("--date_format FORMAT", "Date format to print using strftime (default: `#{default_options[:date_format]}`)") do |string|
       options[:date_format] = string
+    end
+
+    opts.on("--tz ZONE", "--timezone ZONE", "Convert all dates into this timezone (default: `#{default_options[:time_zone]}`)") do |string|
+      options[:time_zone] = string
     end
 
     opts.separator ""
