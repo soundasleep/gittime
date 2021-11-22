@@ -1,6 +1,6 @@
 # gittime
 
-A configurable tool to track work effort by committers on Git and Subversion repositories.
+A configurable tool to track work effort by committers on Git and Subversion repositories, Excel sheets, and CSV files.
 
 Spiritual successor to [svntime](https://github.com/soundasleep/svntime)
 
@@ -42,6 +42,7 @@ default_source:
 #   - git
 #   - svn
 #   - xls
+#   - csv
 sources:
   -
     git: https://github.com/soundasleep/gittime
@@ -52,6 +53,10 @@ sources:
     svn: https://github.com/soundasleep/svntime
   -
     xls: excel.xls
+  -
+    csv: sample.csv
+    fixed:
+      author: jevon.wright
   # ... add more as necessary
 
 # Finally, different sources may have different ways of expressing
@@ -59,8 +64,8 @@ sources:
 # Case insensitive, and you can use regular expressions here.
 authors:
   jevon:
-    - jevon@.*
-    - jevon.wright
+    - jevon.*
+    - Jevon.*
   # ... add more as necessary
 ```
 
