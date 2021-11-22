@@ -51,6 +51,10 @@ class GenerateReports
   def revisions_data
     @revisions_data ||= config.sources.map(&:revisions)
         .flatten(1)
+        .map do |revision|
+          revision[:author_date] = revision[:author_date].in_time_zone(options[:time_zone])
+          revision
+        end
         .sort { |a, b| [a[:author_date], a[:source].label] <=> [b[:author_date], b[:source].label] }
   end
 
@@ -70,7 +74,7 @@ class GenerateReports
     [ row[:id], row[:author_label] || row[:author], print_date(row[:author_date]), row[:source].label, row[:message] ]
   end
 
-  BLOCKS_HEADERS = ["Start date", "End date", "Author", "Start ID", "End ID", "Start Source", "End Source", "Revisions"]
+  BLOCKS_HEADERS = ["ID", "Start date", "End date", "Author", "Start ID", "End ID", "Start Source", "End Source", "Revisions"]
 
   # A list of continuous blocks, by author
   def blocks
@@ -111,12 +115,12 @@ class GenerateReports
     end.sort { |a, b| [a[:author_label], a[:start]] <=> [b[:author_label], b[:start]] }
   end
 
-  BLOCKS_BY_MONTHS_HEADERS = ["Start date", "End date", "Author", "Month", "Year"]
+  BLOCKS_BY_MONTHS_HEADERS = ["ID", "Start date", "End date", "Author", "Month", "Year", "Source block ID"]
 
   # Split multi-month blocks into individual blocks
   def blocks_by_month
     @blocks_by_month ||= blocks_by_month_data.map do |row|
-      [ print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:month], row[:year] ]
+      [ row[:id], print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:month], row[:year], row[:source] ]
     end
   end
 
@@ -126,24 +130,31 @@ class GenerateReports
 
   def blocks_by_month_data
     @blocks_by_month_data ||= begin
+      id = 0
       result = []
       blocks_data.each do |block|
         while print_month(block[:start]) != print_month(block[:end])
+          id += 1
           result << {
+            id: id,
             start: block[:start],
             end: block[:start].end_of_month,
             author_label: block[:author_label],
             month: in_local_tz(block[:start]).strftime("%-m"),
             year: in_local_tz(block[:start]).strftime("%Y"),
+            source: block[:id],
           }
-          block[:start] = (block[:start] + 1.month).beginning_of_month
+          block[:start] = (block[:start].end_of_month + 1.day).beginning_of_month
         end
+        id += 1
         result << {
+          id: id,
           start: block[:start],
           end: block[:end],
           author_label: block[:author_label],
           month: in_local_tz(block[:start]).strftime("%-m"),
           year: in_local_tz(block[:start]).strftime("%Y"),
+          source: block[:id],
         }
       end
       result
@@ -151,7 +162,11 @@ class GenerateReports
   end
 
   def new_current_author_block(row)
+    @new_current_author_block ||= 0
+    @new_current_author_block += 1
+
     {
+      id: @new_current_author_block,
       start: row[:author_date] - row[:source].before.seconds,
       end: row[:author_date] + row[:source].after.seconds,
       author_label: row[:author_label],
@@ -168,15 +183,15 @@ class GenerateReports
   end
 
   def print_block_row(row)
-    [ print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
+    [ row[:id], print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
   end
 
-  WORK_BY_MONTHS_HEADERS = ["Month starting", "Author", "Seconds", "Blocks", "Start date", "End date"]
+  WORK_BY_MONTHS_HEADERS = ["ID", "Month starting", "Author", "Seconds", "Blocks", "Start date", "End date"]
 
   # Number of seconds of "work" done by each author per month
   def work_by_month
     @work_by_month ||= work_by_month_data.map do |row|
-      [ print_date(row[:start].beginning_of_month), row[:author_label], row[:seconds], row[:blocks], print_date(row[:start]), print_date(row[:end]) ]
+      [ row[:id], print_date(row[:start].beginning_of_month), row[:author_label], row[:seconds], row[:blocks], print_date(row[:start]), print_date(row[:end]) ]
     end
   end
 
@@ -207,11 +222,15 @@ class GenerateReports
       end
 
       result
-    end
+    end.sort { |a, b| [a[:author_label], a[:start]] <=> [b[:author_label], b[:start]] }
   end
 
   def new_current_work_block(block)
+    @new_current_work_block ||= 0
+    @new_current_work_block += 1
+
     {
+      id: @new_current_work_block,
       start: block[:start],
       end: block[:end],
       author_label: block[:author_label],
@@ -221,6 +240,10 @@ class GenerateReports
   end
 
   def block_seconds(block)
+    if block[:end] < block[:start]
+      fail "Block #{block} starts after it ends"
+    end
+
     block[:end].to_time.to_i - block[:start].to_time.to_i
   end
 
