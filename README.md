@@ -41,6 +41,7 @@ default_source:
 # Available sources:
 #   - git
 #   - svn
+#   - xls
 sources:
   -
     git: https://github.com/soundasleep/svntime
@@ -49,16 +50,30 @@ sources:
     after: 30 seconds
   -
     svn: https://github.com/soundasleep/svntime
+  -
+    xls: excel.xls
   # ... add more as necessary
 
 # Finally, different sources may have different ways of expressing
 # authors. Use this to map source authors to a consistent author label.
+# Case insensitive, and you can use regular expressions here.
 authors:
   jevon:
-    - jevon@*
+    - jevon@.*
     - jevon.wright
   # ... add more as necessary
 ```
+
+### Using an Excel format
+
+Only `.xls` is supported, not `.xlsx`: see [spreadsheet gem](https://github.com/zdavatz/spreadsheet)
+
+Each worksheet in the file must have a header row. For the best success,
+provide the following header rows:
+
+* `Modified by`
+* `Modified at`
+* `Message`
 
 ## Testing
 

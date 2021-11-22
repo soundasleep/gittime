@@ -8,6 +8,6 @@ class ReadConfigFile
   end
 
   def call
-    ConfigFile.new(YAML.load_file(file))
+    ConfigFile.new(YAML.load_file(file), File.expand_path(file))
   end
 end

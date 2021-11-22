@@ -8,6 +8,8 @@ gem 'rake'
 gem 'chronic_duration'
 gem 'tzinfo-data'
 
+gem 'spreadsheet'
+
 group :development, :test do
   gem 'rspec'
   gem 'rspec-collection_matchers'
