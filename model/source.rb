@@ -37,7 +37,6 @@ class Source
       end
 
       LOG.info "Found #{result.count} revisions in #{label}"
-
       result
     end
   end
@@ -160,6 +159,6 @@ class Source
   end
 
   def xls_path
-    "#{xls}"
+    File.join(File.dirname(config_file.path), xls)
   end
 end

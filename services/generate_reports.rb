@@ -38,7 +38,7 @@ class GenerateReports
   end
 
   def report_path(file)
-    "#{options[:output]}#{file}"
+    File.join(File.dirname(config.path), options[:output], file)
   end
 
   REVISIONS_HEADERS = ["ID", "Author", "Date", "Source", "Message"]
