@@ -14,7 +14,7 @@ Spiritual successor to [svntime](https://github.com/soundasleep/svntime)
 
 ```
 bundle install
-ruby generate.rb --config path/to/config.yml
+bundle exec ruby generate.rb --config path/to/config.yml
 ```
 
 Will generate the following files:
