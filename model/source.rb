@@ -43,6 +43,8 @@ class Source
 
       LOG.info "Found #{result.count} revisions in #{label}"
       result
+    rescue StandardError => e
+      fail "Could not load #{name}: #{e}"
     end
   end
 
