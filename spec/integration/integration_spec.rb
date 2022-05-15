@@ -15,4 +15,11 @@ describe "integration", type: :integration do
     expect(filenames).to include "blocks-by-month.csv"
     expect(filenames).to include "work-by-month.csv"
   end
+
+  let(:work_by_month) { result.select { |result| result[:filename] == "work-by-month.csv" }.only }
+  let(:lines) { work_by_month[:data].size }
+
+  it "has calculated at least ten months of work" do
+    expect(lines).to be >= 10
+  end
 end
