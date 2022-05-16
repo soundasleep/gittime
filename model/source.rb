@@ -7,6 +7,7 @@ class Source
   attr_reader :config_file
 
   attr_reader :git, :svn, :xls, :csv
+  attr_reader :only_paths # filter only commits which touches one of these paths
   attr_reader :name, :before, :after
   attr_reader :fixed
 
@@ -17,6 +18,7 @@ class Source
     @svn = yaml["svn"]
     @xls = yaml["xls"]
     @csv = yaml["csv"]
+    @only_paths = yaml["only"] || []
     @name = yaml["name"] || label.split("/").last
     @before = seconds_in(yaml["before"]) || default_source.before
     @after = seconds_in(yaml["after"]) || default_source.after
@@ -48,6 +50,23 @@ class Source
     end
   end
 
+  def git_commit_matches_path?(commit_hash)
+    return true if only_paths.empty?
+
+    LOG.debug "Testing git commit #{commit_hash} against #{only_paths.size} paths" if LOG.debug?
+
+    # Make sure that this commit has touched one of the given paths somehow
+    stream_command("#{git_list_paths_command(commit_hash)}") do |stat_line|
+      tab_split = stat_line.split("\t", 3)
+
+      if tab_split[0].match?(/\A[0-9]+\Z/)
+        return true if only_paths.any? { |path_regex| tab_split[2].match?(path_regex) }
+      end
+    end
+
+    false
+  end
+
   def load_git!
     LOG.info "Cloning #{git} into #{temp_repository_path}..."
     result = []
@@ -55,6 +74,10 @@ class Source
       line = line.gsub("\"", "'") # As far as I can tell, git log can't output valid CSV with " in subjects
       begin
         CSV.parse(line).each do |csv|
+          commit_hash = csv[0]
+
+          break unless git_commit_matches_path?(commit_hash)
+
           result << {
             id: csv[0],
             author: csv[1],
@@ -192,6 +215,10 @@ class Source
 
   def git_log_command
     "cd #{temp_repository_path} && git log --date iso --pretty=format:\"%H\",\"%aE\",\"%ad\",\"%cE\",\"%cd\",\"%s\""
+  end
+
+  def git_list_paths_command(commit_hash)
+    "cd #{temp_repository_path} && git show #{commit_hash} --numstat"
   end
 
   def svn_log_command
