@@ -46,9 +46,13 @@ default_source:
 sources:
   -
     git: https://github.com/soundasleep/gittime
-    # You can customise before/after here, too, based on your commit style
+    # You can customise before/after here, based on your commit style:
     before: 2 hours
     after: 30 seconds
+    # You can select only commits that match a path (each of these are a regexp):
+    # only:
+    #   - \.github/
+    #   - README.*
   -
     svn: https://github.com/soundasleep/svntime
   -
