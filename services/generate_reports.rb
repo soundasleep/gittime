@@ -13,7 +13,7 @@ class GenerateReports
   end
 
   def call
-    FileUtils.mkdir_p(options[:output])
+    FileUtils.mkdir_p(report_path("."))
 
     reports = []
     reports << write_report!("revisions.csv", REVISIONS_HEADERS, revisions)
