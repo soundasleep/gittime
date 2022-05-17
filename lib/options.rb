@@ -38,7 +38,7 @@ def load_command_line_options
     opts.separator ""
     opts.separator "Report options:"
 
-    opts.on("-o", "--output DIR/", "Write reports to this directory (default: `#{default_options[:output]}`)") do |path|
+    opts.on("-o", "--output DIR/", "Write reports to this directory, relative to config file (default: `#{default_options[:output]}`)") do |path|
       fail "Expected / at end of output path" unless path[-1] == "/"
       options[:output] = path
     end
