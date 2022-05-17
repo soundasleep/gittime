@@ -53,8 +53,6 @@ class Source
   def git_commit_matches_path?(commit_hash)
     return true if only_paths.empty?
 
-    LOG.debug "Testing git commit #{commit_hash} against #{only_paths.size} paths" if LOG.debug?
-
     # Make sure that this commit has touched one of the given paths somehow
     stream_command("#{git_list_paths_command(commit_hash)}") do |stat_line|
       tab_split = stat_line.split("\t", 3)
@@ -65,6 +63,21 @@ class Source
     end
 
     false
+  end
+
+  def git_commit_paths(commit_hash)
+    return [] unless config_file.categories.any?
+
+    result = []
+    stream_command("#{git_list_paths_command(commit_hash)}") do |stat_line|
+      tab_split = stat_line.split("\t", 3)
+
+      if tab_split[0].match?(/\A[0-9]+\Z/)
+        result << tab_split[2]
+      end
+    end
+
+    result
   end
 
   def load_git!
@@ -85,6 +98,7 @@ class Source
             committer: csv[3],
             committer_date: DateTime.parse(csv[4]),
             message: csv[5],
+            paths: git_commit_paths(commit_hash),
             source: self,
           }.merge(fixed_data)
         end

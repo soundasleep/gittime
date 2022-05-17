@@ -29,7 +29,7 @@ sources:
       author: jevon.wright
   # ... add more as necessary
 
-# Finally, different sources may have different ways of expressing
+# Different sources may have different ways of expressing
 # authors. Use this to map source authors to a consistent author label.
 # Case insensitive, and you can use regular expressions here.
 authors:
@@ -37,3 +37,16 @@ authors:
     - jevon.*
     - Jevon.*
   # ... add more as necessary
+
+# For Git sources, you can also categorise commits into categories.
+# Each path changed in a commit is matched against the first category match
+# found using path regexps, and given a (1.0/total number of paths changed)% weighting.
+# These categories are then added together into each generated report.
+categories:
+  test:
+    - spec
+  config:
+    - config.*yml
+  docs:
+    - README
+  # an 'other' category will capture everything else
