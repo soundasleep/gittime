@@ -72,7 +72,7 @@ authors:
     - Jevon.*
   # ... add more as necessary
 
-# For Git sources, you can also categorise commits into categories.
+# For Git, xls, and csv sources, you can also categorise commits into categories.
 # Each path changed in a commit is matched against the first category match
 # found using path regexps, and given a (1.0/total number of paths changed)% weighting.
 # These categories are then added together into each generated report.
@@ -96,6 +96,7 @@ provide the following header rows:
 * `Modified by`
 * `Modified at`
 * `Message`
+* `Path`
 
 ### Categories example
 
