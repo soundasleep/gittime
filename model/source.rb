@@ -170,6 +170,8 @@ class Source
         columns[cell_id] = :author
       elsif cell.match?(/message/i)
         columns[cell_id] = :message
+      elsif cell.match?(/(path|url)/i)
+        columns[cell_id] = :paths
       end
     end
 
