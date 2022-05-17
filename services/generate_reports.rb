@@ -88,6 +88,10 @@ class GenerateReports
 
     if revision[:paths] && !revision[:paths].empty?
       # we weight revisions based on the % of paths that match each category
+      if !revision[:paths].is_a?(Array)
+        revision[:paths] = [revision[:paths]]
+      end
+
       one_path_percent = 1.0 / revision[:paths].size
       revision[:paths].each do |path|
         category = select_category_for(path)
