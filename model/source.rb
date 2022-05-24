@@ -164,6 +164,8 @@ class Source
     columns = {}
 
     first_row.each_with_index do |cell, cell_id|
+      next if cell.nil?
+
       if cell.match?(/(modified at|occurred at)/i)
         columns[cell_id] = :author_date
       elsif cell.match?(/(performed by|created by|modified by|author|user)/i)
