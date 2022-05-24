@@ -144,6 +144,7 @@ class Source
 
       worksheet.rows.each.with_index do |row, row_id|
         next if row_id == 0
+        next if row[0].nil? # e.g. an empty line
 
         current_result = {
           id: "#{label}:#{worksheet.name}:#{row_id}",
