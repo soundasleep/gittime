@@ -153,6 +153,9 @@ class Source
           current_result[key] = row[cell_id]
         end
         current_result.merge!(fixed_data)
+
+        fail "no author_date found in xls row #{current_result[:id]}" if current_result[:author_date].nil?
+
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
         result << current_result
       end
