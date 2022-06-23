@@ -18,7 +18,7 @@ class CommandLineRunner
       if !File.exist?(options[:config])
         fail "Cannot load #{options[:config]} - you can try init with --init"
       end
-      config = ReadConfigFile.new(file: options[:config]).call
+      config = ReadConfigFile.new(file: options[:config], options: options).call
       GenerateReports.new(config: config, options: options).call
     end
   end

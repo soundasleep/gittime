@@ -7,8 +7,9 @@ def default_options
     output: "output/",
     date_format: "%F %T",
     time_zone: "UTC",
-    level: "info",
+    level: "debug",
     colours: true,
+    cache: nil,
   }
 end
 
@@ -33,6 +34,11 @@ def load_command_line_options
 
     opts.on("--overwrite", "Overwrite any existing config files") do
       options[:overwrite] = true
+    end
+
+    opts.on("--cache DIR/", "Cache git repositories in this directory, relative to config file (default: `#{default_options[:cache]}`)") do |path|
+      fail "Expected / at end of cache path" unless path[-1] == "/"
+      options[:cache] = path
     end
 
     opts.separator ""

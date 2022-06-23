@@ -1,16 +1,18 @@
 class ConfigFile
   attr_reader :sources, :authors, :default_source, :categories, :only_filters
   attr_reader :path
+  attr_reader :options
 
   class NoAuthorsDefinedError < StandardError; end
 
-  def initialize(yaml, path)
+  def initialize(yaml, path, options)
     fail "No sources defined" unless yaml["sources"]
 
     @path = path
+    @options = options
 
     @default_source = DefaultSource.new(yaml["default_source"] || default_source_params)
-    @sources = yaml["sources"].map { |row| Source.new(row, self, @default_source) }
+    @sources = yaml["sources"].map { |row| Source.new(row, self, @default_source, options) }
     @authors = yaml["authors"] or raise NoAuthorsDefinedError.new("no authors defined in config: '#{yaml}'")
     @categories = yaml["categories"] || {}
     @only_filters = yaml["only"] || {}

@@ -5,14 +5,16 @@ class Source
   include SecondsHelper
 
   attr_reader :config_file
+  attr_reader :options
 
   attr_reader :git, :svn, :xls, :csv
   attr_reader :only_paths # filter only commits which touches one of these paths
   attr_reader :name, :before, :after
   attr_reader :fixed
 
-  def initialize(yaml, config_file, default_source)
+  def initialize(yaml, config_file, default_source, options)
     @config_file = config_file
+    @options = options
 
     @git = yaml["git"]
     @svn = yaml["svn"]
@@ -81,9 +83,14 @@ class Source
   end
 
   def load_git!
-    LOG.info "Cloning #{git} into #{temp_repository_path}..."
+    LOG.info "Cloning #{git} into #{possibly_cached_repository_path}..."
     result = []
-    stream_command("#{git_clone_command} && #{git_log_command}") do |line|
+
+    stream_command("#{git_clone_command}") do |line|
+      # ignore any output from clone/cd/pull
+    end
+
+    stream_command("#{git_log_command}") do |line|
       line = line.gsub("\"", "'") # As far as I can tell, git log can't output valid CSV with " in subjects
       begin
         CSV.parse(line).each do |csv|
@@ -106,8 +113,11 @@ class Source
         LOG.warn "Ignoring CSV malformed row: #{line}"
       end
     end
-    LOG.debug "Deleting #{temp_repository_path}..." if LOG.debug?
-    FileUtils.remove_dir(temp_repository_path)
+
+    unless options[:cache]
+      LOG.debug "Deleting #{possibly_cached_repository_path}..." if LOG.debug?
+      FileUtils.remove_dir(possibly_cached_repository_path)
+    end
     result
   end
 
@@ -240,20 +250,28 @@ class Source
 
   private
 
-  def temp_repository_path
-    @temp_repository_path ||= "#{Dir.tmpdir}/#{name}-#{Time.now.to_i}"
+  def possibly_cached_repository_path
+    @possibly_cached_repository_path ||= if options[:cache]
+      File.join(File.dirname(config_file.path), options[:cache], repository_name)
+    else
+      "#{Dir.tmpdir}/#{name}-#{Time.now.to_i}"
+    end
   end
 
   def git_clone_command
-    "git clone #{git} #{temp_repository_path}"
+    if options[:cache] && Dir.exist?(possibly_cached_repository_path)
+      "cd #{possibly_cached_repository_path} && git reset --hard && git clean -f && git pull"
+    else
+      "git clone #{git} #{possibly_cached_repository_path}"
+    end
   end
 
   def git_log_command
-    "cd #{temp_repository_path} && git log --date iso --pretty=format:\"%H\",\"%aE\",\"%ad\",\"%cE\",\"%cd\",\"%s\""
+    "cd #{possibly_cached_repository_path} && git log --date iso --pretty=format:\"%H\",\"%aE\",\"%ad\",\"%cE\",\"%cd\",\"%s\""
   end
 
   def git_list_paths_command(commit_hash)
-    "cd #{temp_repository_path} && git show #{commit_hash} --numstat"
+    "cd #{possibly_cached_repository_path} && git show #{commit_hash} --numstat"
   end
 
   def svn_log_command
@@ -270,6 +288,10 @@ class Source
 
   def has_fixed?(label)
     fixed[label].present?
+  end
+
+  def repository_name
+    (git || svn || xls || csv).split("/").last or fail "could not find repository name for #{label}"
   end
 
   def fixed_data

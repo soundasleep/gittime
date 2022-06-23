@@ -1,10 +1,11 @@
 require "yaml"
 
 class ReadConfigFile
-  attr_reader :file
+  attr_reader :file, :options
 
-  def initialize(file:)
+  def initialize(file:, options:)
     @file = file
+    @options = options
   end
 
   def call
@@ -16,6 +17,6 @@ class ReadConfigFile
       yaml = deep_merge(yaml, YAML.load_file(resolved_filename))
     end
 
-    ConfigFile.new(yaml, File.expand_path(file))
+    ConfigFile.new(yaml, File.expand_path(file), options)
   end
 end

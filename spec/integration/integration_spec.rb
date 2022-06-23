@@ -35,6 +35,28 @@ describe "integration", type: :integration do
       it "does not crash" do
         expect(result).to_not eq nil
       end
+
+      describe "with cache options" do
+        let(:options) { default_options.merge({ cache: ".cache/", config: config, output: output_path }) }
+
+        it "does not crash" do
+          expect(result).to_not eq nil
+        end
+
+        it "creates cache directories" do
+          expect(Dir.exist?("#{File.dirname(__FILE__)}/.cache")).to eq true
+          expect(Dir.exist?("#{File.dirname(__FILE__)}/.cache/gittime")).to eq true
+        end
+
+        it "can reuse the cache directories the second time around" do
+          expect(Dir.exist?("#{File.dirname(__FILE__)}/.cache/gittime")).to eq true
+
+          result2 = CommandLineRunner.new(options: options).call
+
+          expect(result2).to_not eq nil
+          expect(Dir.exist?("#{File.dirname(__FILE__)}/.cache/gittime")).to eq true
+        end
+      end
     end
 
     describe "merging configurations together" do
