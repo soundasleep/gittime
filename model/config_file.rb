@@ -12,7 +12,13 @@ class ConfigFile
     @options = options
 
     @default_source = DefaultSource.new(yaml["default_source"] || default_source_params)
-    @sources = yaml["sources"].map { |row| Source.new(row, self, @default_source, options) }
+    @sources = yaml["sources"].map do |row|
+      if row.is_a?(Array) # named source
+        named_source_name = row[0]
+        row = row[1]
+      end
+      Source.new(row, self, @default_source, options)
+    end
     @authors = yaml["authors"] or raise NoAuthorsDefinedError.new("no authors defined in config: '#{yaml}'")
     @categories = yaml["categories"] || {}
     @only_filters = yaml["only"] || {}

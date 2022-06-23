@@ -68,6 +68,16 @@ describe "integration", type: :integration do
       end
     end
 
+    # we need named sources so we can merge e.g. two identical sources together
+    describe "named sources" do
+      let(:config_filename) { "config.named.yml" }
+      let(:output_path) { "./output" }
+
+      it "does not crash" do
+        expect(result).to_not eq nil
+      end
+    end
+
     describe "filtered authors" do
       describe "with results" do
         let(:config_filename) { "config.filtered-authors.positive.yml" }
