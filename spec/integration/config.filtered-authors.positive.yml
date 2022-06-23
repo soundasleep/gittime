@@ -1,0 +1,12 @@
+sources:
+  -
+    git: https://github.com/soundasleep/gittime
+
+only:
+  authors:
+    - jevon
+
+authors:
+  jevon:
+    - jevon.*
+    - Jevon.*

@@ -124,7 +124,10 @@ class GenerateReports
     @revisions_with_authors_data ||= revisions_data.map do |row|
       row[:author_label] = config.select_author(row[:author])
       row
-    end.uniq { |row| [row[:author_label], row[:author_date].to_time.to_i] }
+    end.select do |revision|
+        config.only_filters.empty? || config.only_filters["authors"].empty? || config.only_filters["authors"].include?(revision[:author_label])
+      end
+      .uniq { |row| [row[:author_label], row[:author_date].to_time.to_i] }
   end
 
   def print_revision_row(row)
