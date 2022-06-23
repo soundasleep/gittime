@@ -7,6 +7,7 @@ gem 'rake'
 
 gem 'chronic_duration'
 gem 'tzinfo-data'
+gem 'deep_merge', :require => 'deep_merge/rails_compat'
 
 gem 'spreadsheet'
 
