@@ -126,8 +126,11 @@ class Source
         }.merge(fixed_data)
       elsif data = line.match(/(.+)/) && current_result[:id]
         current_result[:message] = line
-        result << current_result.merge(fixed_data)
-        current_result = {}
+
+        next unless result_matches_filter?(current_result)
+
+        current_result.merge!(fixed_data)
+        result << current_result if result_matches_filter?(current_result)
       end
     end
     result
@@ -158,10 +161,20 @@ class Source
         fail "no author_date found in xls row #{current_result[:id]}" if current_result[:author_date].nil?
 
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
-        result << current_result
+        result << current_result if result_matches_filter?(current_result)
       end
     end
     result
+  end
+
+  def result_matches_filter?(current_result)
+    return true if only_paths.empty?
+
+    only_paths.each do |path_regex|
+      return true if "#{current_result[:paths]}".match?(path_regex)
+    end
+
+    return false
   end
 
   def map_headers(first_row)
