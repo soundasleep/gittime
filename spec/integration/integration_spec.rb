@@ -37,39 +37,41 @@ describe "integration", type: :integration do
       end
     end
 
-    describe "a git repository, with filtered authors" do
-      let(:config_filename) { "config.filtered-authors.positive.yml" }
+    describe "filtered authors" do
+      describe "with results" do
+        let(:config_filename) { "config.filtered-authors.positive.yml" }
 
-      it "can be run against a repository" do
-        expect(result).to_not eq nil
-        expect(filenames).to include "revisions.csv"
-        expect(filenames).to include "revisions-with-authors.csv"
-        expect(filenames).to include "blocks.csv"
-        expect(filenames).to include "blocks-by-month.csv"
-        expect(filenames).to include "work-by-month.csv"
+        it "can be run against a repository" do
+          expect(result).to_not eq nil
+          expect(filenames).to include "revisions.csv"
+          expect(filenames).to include "revisions-with-authors.csv"
+          expect(filenames).to include "blocks.csv"
+          expect(filenames).to include "blocks-by-month.csv"
+          expect(filenames).to include "work-by-month.csv"
+        end
+
+        it "has calculated at least four blocks of work" do
+          # Should be the same as above
+          expect(lines).to be >= 4
+        end
       end
 
-      it "has calculated at least four blocks of work" do
-        # Should be the same as above
-        expect(lines).to be >= 4
-      end
-    end
+      describe "without results" do
+        let(:config_filename) { "config.filtered-authors.negative.yml" }
 
-    describe "a git repository, with filtered authors that don't exist" do
-      let(:config_filename) { "config.filtered-authors.negative.yml" }
+        it "can be run against a repository" do
+          expect(result).to_not eq nil
+          expect(filenames).to include "revisions.csv"
+          expect(filenames).to include "revisions-with-authors.csv"
+          expect(filenames).to include "blocks.csv"
+          expect(filenames).to include "blocks-by-month.csv"
+          expect(filenames).to include "work-by-month.csv"
+        end
 
-      it "can be run against a repository" do
-        expect(result).to_not eq nil
-        expect(filenames).to include "revisions.csv"
-        expect(filenames).to include "revisions-with-authors.csv"
-        expect(filenames).to include "blocks.csv"
-        expect(filenames).to include "blocks-by-month.csv"
-        expect(filenames).to include "work-by-month.csv"
-      end
-
-      it "has calculated zero blocks of work" do
-        # However we're filtering against a committer that doesn't exist
-        expect(lines).to eq 0
+        it "has calculated zero blocks of work" do
+          # However we're filtering against a committer that doesn't exist
+          expect(lines).to eq 0
+        end
       end
     end
 
