@@ -89,7 +89,7 @@ class Source
         CSV.parse(line).each do |csv|
           commit_hash = csv[0]
 
-          break unless git_commit_matches_path?(commit_hash)
+          next unless git_commit_matches_path?(commit_hash)
 
           result << {
             id: csv[0],
