@@ -89,6 +89,12 @@ categories:
   docs:
     - README
   # an 'other' category will capture everything else
+
+# For more complex setups, you can merge multiple files together.
+# Each file is loaded and deep merged, but has the same schema as your config.yml.
+# merge:
+# - .file1.yml
+# - .file2.yml
 ```
 
 ### Using an Excel format

@@ -1,0 +1,6 @@
+merge:
+  - config.git.yml
+
+authors:
+  jevon:
+    - jevon.*

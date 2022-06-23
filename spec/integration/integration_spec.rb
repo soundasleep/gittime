@@ -37,6 +37,15 @@ describe "integration", type: :integration do
       end
     end
 
+    describe "merging configurations together" do
+      let(:config_filename) { "config.merge.yml" }
+      let(:output_path) { "./output" }
+
+      it "does not crash" do
+        expect(result).to_not eq nil
+      end
+    end
+
     describe "filtered authors" do
       describe "with results" do
         let(:config_filename) { "config.filtered-authors.positive.yml" }

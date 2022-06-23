@@ -12,3 +12,4 @@ ActiveSupport::Dependencies.autoload_paths = [
 require_relative "monkey_patches"
 require_relative "options"
 require_relative "logging"
+require_relative "deep_merge"
