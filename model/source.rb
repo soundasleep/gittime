@@ -285,7 +285,7 @@ class Source
   end
 
   def svn_log_command
-    "svn log -r 1:HEAD #{svn}"
+    "svn log -r 1:HEAD \"#{svn}\""
   end
 
   def xls_path
