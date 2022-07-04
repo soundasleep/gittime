@@ -122,6 +122,8 @@ class Source
   end
 
   def load_svn!
+    fail "SVN sources do not yet support path filtering" if only_paths && only_paths.any?
+
     result = []
     current_result = {}
     stream_command("#{svn_log_command}") do |line|
@@ -136,17 +138,19 @@ class Source
         }.merge(fixed_data)
       elsif data = line.match(/(.+)/) && current_result[:id]
         current_result[:message] = line
-
-        next unless result_matches_filter?(current_result)
-
         current_result.merge!(fixed_data)
-        result << current_result if result_matches_filter?(current_result)
+
+        # TODO support filtering paths on svn (would need to check out each revision)
+
+        result << current_result
       end
     end
     result
   end
 
   def load_xls!
+    fail "XLS sources do not yet support path filtering" if only_paths && only_paths.any?
+
     result = []
 
     require "spreadsheet"
@@ -171,13 +175,17 @@ class Source
         fail "no author_date found in xls row #{current_result[:id]}" if current_result[:author_date].nil?
 
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
-        result << current_result if result_matches_filter?(current_result)
+        # Note filtering by paths does not exist for .xls
+
+        result << current_result
       end
     end
     result
   end
 
   def result_matches_filter?(current_result)
+    fail "no path provided" unless current_result[:paths]
+
     return true if only_paths.empty?
 
     only_paths.each do |path_regex|
@@ -211,6 +219,8 @@ class Source
   end
 
   def load_csv!
+    fail "XLS sources do not yet support path filtering" if only_paths && only_paths.any?
+
     result = []
     columns = "not loaded yet"
     CSV.foreach(csv_path).each.with_index do |row, row_id|
