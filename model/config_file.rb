@@ -25,6 +25,8 @@ class ConfigFile
   end
 
   def select_author(label)
+    fail "cannot select an author '#{label}'" unless label
+
     authors.each do |author, matches|
       matches.each do |match|
         if label.match?(match)

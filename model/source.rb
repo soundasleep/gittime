@@ -173,8 +173,10 @@ class Source
         current_result.merge!(fixed_data)
 
         fail "no author_date found in xls row #{current_result[:id]}" if current_result[:author_date].nil?
-
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
+
+        fail "no author found in xls row #{current_result[:id]}" if current_result[:author].nil?
+
         # Note filtering by paths does not exist for .xls
 
         result << current_result
