@@ -149,8 +149,6 @@ class Source
   end
 
   def load_xls!
-    fail "XLS sources do not yet support path filtering" if only_paths && only_paths.any?
-
     result = []
 
     require "spreadsheet"
@@ -177,8 +175,7 @@ class Source
 
         fail "no author found in xls row #{current_result[:id]}" if current_result[:author].nil?
 
-        # Note filtering by paths does not exist for .xls
-
+        next unless result_matches_filter?(current_result)
         result << current_result
       end
     end
@@ -221,8 +218,6 @@ class Source
   end
 
   def load_csv!
-    fail "XLS sources do not yet support path filtering" if only_paths && only_paths.any?
-
     result = []
     columns = "not loaded yet"
     CSV.foreach(csv_path).each.with_index do |row, row_id|
@@ -239,6 +234,9 @@ class Source
         end
         current_result.merge!(fixed_data)
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
+
+        next unless result_matches_filter?(current_result)
+
         result << current_result
       end
     end
