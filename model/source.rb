@@ -183,7 +183,7 @@ class Source
   end
 
   def result_matches_filter?(current_result)
-    fail "no path provided" unless current_result[:paths]
+    fail "no path provided to filter against #{only_paths}" if only_paths.any? && !current_result[:paths]
 
     return true if only_paths.empty?
 
