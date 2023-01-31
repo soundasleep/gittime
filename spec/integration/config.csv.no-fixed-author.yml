@@ -1,0 +1,9 @@
+sources:
+  -
+    csv: ../../sample.csv
+    # fixed:
+    #   author: jevon.wright
+
+authors:
+  jevon:
+    - jevon*

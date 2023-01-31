@@ -1,0 +1,9 @@
+sources:
+  -
+    csv: csv.with-author.with-gaps.csv
+    fallback:
+      author: anonymous
+
+authors:
+  jevon:
+    - jevon*
