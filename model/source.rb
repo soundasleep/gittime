@@ -10,7 +10,7 @@ class Source
   attr_reader :git, :svn, :xls, :csv
   attr_reader :only_paths # filter only commits which touches one of these paths
   attr_reader :name, :before, :after
-  attr_reader :fixed
+  attr_reader :fixed, :fallback
 
   def initialize(yaml, config_file, default_source, options)
     @config_file = config_file
@@ -25,6 +25,7 @@ class Source
     @before = seconds_in(yaml["before"]) || default_source.before
     @after = seconds_in(yaml["after"]) || default_source.after
     @fixed = yaml["fixed"] || {}
+    @fallback = yaml["fallback"] || {}
 
     fail "No source found for #{yaml}" unless git || svn || xls || csv
     fail "Cannot have <= 0 before seconds for #{yaml}" if @before <= 0
@@ -98,7 +99,7 @@ class Source
 
           next unless git_commit_matches_path?(commit_hash)
 
-          result << {
+          current_result = {
             id: csv[0],
             author: csv[1],
             author_date: DateTime.parse(csv[2]),
@@ -108,6 +109,10 @@ class Source
             paths: git_commit_paths(commit_hash),
             source: self,
           }.merge(fixed_data)
+
+          apply_fallbacks!(current_result)
+
+          result << current_result
         end
       rescue CSV::MalformedCSVError
         LOG.warn "Ignoring CSV malformed row: #{line}"
@@ -136,6 +141,8 @@ class Source
           message: data[5],
           source: self,
         }.merge(fixed_data)
+
+        apply_fallbacks!(current_result)
       elsif data = line.match(/(.+)/) && current_result[:id]
         current_result[:message] = line
         current_result.merge!(fixed_data)
@@ -170,6 +177,8 @@ class Source
         end
         current_result.merge!(fixed_data)
 
+        apply_fallbacks!(current_result)
+
         fail "no author_date found in xls row #{current_result[:id]}" if current_result[:author_date].nil?
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
 
@@ -180,6 +189,14 @@ class Source
       end
     end
     result
+  end
+
+  def apply_fallbacks!(current_result)
+    if current_result[:author].nil? || current_result[:author].empty?
+      current_result[:author] ||= fallback["author"]
+    end
+
+    current_result
   end
 
   def result_matches_filter?(current_result)
@@ -233,6 +250,9 @@ class Source
           current_result[key] = row[cell_id]
         end
         current_result.merge!(fixed_data)
+
+        apply_fallbacks!(current_result)
+
         current_result[:author_date] = DateTime.parse(current_result[:author_date])
 
         next unless result_matches_filter?(current_result)

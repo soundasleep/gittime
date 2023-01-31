@@ -57,6 +57,9 @@ sources:
     svn: https://github.com/soundasleep/svntime
   -
     xls: excel.xls
+    # You can specify a fallback author if any field is empty:
+    fallback:
+      author: anonymous
   -
     csv: sample.csv
     fixed:

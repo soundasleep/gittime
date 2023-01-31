@@ -1,0 +1,7 @@
+sources:
+  -
+    csv: csv.with-author.csv
+
+authors:
+  jevon:
+    - jevon*
