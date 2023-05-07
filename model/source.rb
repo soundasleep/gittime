@@ -180,7 +180,11 @@ class Source
         apply_fallbacks!(current_result)
 
         fail "no author_date found in xls row #{current_result[:id]}" if current_result[:author_date].nil?
-        current_result[:author_date] = DateTime.parse(current_result[:author_date])
+        begin
+          current_result[:author_date] = DateTime.parse(current_result[:author_date])
+        rescue StandardError => e
+          fail "Could not parse '#{current_result[:author_date]}' on row #{row_id}: #{e}"
+        end
 
         fail "no author found in xls row #{current_result[:id]}" if current_result[:author].nil?
 
