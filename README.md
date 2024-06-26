@@ -112,6 +112,29 @@ provide the following header rows:
 * `Message`
 * `Path`
 
+### Sharing variables through secondary files
+
+You can define "environment" variables in a secondary YAML file through the command-line option `--env`.
+For example, by defining an environment variable file `.env.yml` with the following contents:
+
+```yml
+token: gh_abc
+username: jevon
+```
+
+If gittime is run with `--env .env.yml`, these variables will be inserted into a
+config file like the following (using simple string substitution):
+
+```yml
+sources:
+  -
+    git: https://${{ token }}@github.com/soundasleep/gittime
+
+authors:
+  jevon:
+    - ${{ username }}.*
+```
+
 ### Categories example
 
 Using the "test", "config", and "docs" categories in the sample config above against the

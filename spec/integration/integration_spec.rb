@@ -36,6 +36,10 @@ describe "integration", type: :integration do
         expect(result).to_not eq nil
       end
 
+      it "has calculated at least ten blocks of work" do
+        expect(lines).to be >= 10
+      end
+
       describe "with cache options" do
         let(:options) { default_options.merge({ cache: ".cache/", config: config, output: output_path }) }
 
@@ -55,6 +59,20 @@ describe "integration", type: :integration do
 
           expect(result2).to_not eq nil
           expect(Dir.exist?("#{File.dirname(__FILE__)}/.cache/gittime")).to eq true
+        end
+      end
+
+      describe "with env options" do
+        let(:config_filename) { "config.git.env.yml" }
+        let(:env_filename) { ".config.git.env.yml" }
+        let(:options) { default_options.merge({ config: config, output: output_path, env: "#{File.dirname(__FILE__)}/#{env_filename}" }) }
+
+        it "does not crash" do
+          expect(result).to_not eq nil
+        end
+
+        it "has calculated at least ten blocks of work" do
+          expect(lines).to be >= 10
         end
       end
     end

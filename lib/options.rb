@@ -10,6 +10,7 @@ def default_options
     level: "debug",
     colours: true,
     cache: nil,
+    env: nil,
   }
 end
 
@@ -30,6 +31,10 @@ def load_command_line_options
 
     opts.on("-i", "--init", "Initialise a new config file") do
       options[:init] = true
+    end
+
+    opts.on("-e", "--env FILE.YML", "Use environment variables from a secondary file") do
+      options[:env] = file
     end
 
     opts.on("--overwrite", "Overwrite any existing config files") do
