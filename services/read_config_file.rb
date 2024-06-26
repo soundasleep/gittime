@@ -9,21 +9,25 @@ class ReadConfigFile
   end
 
   def call
-    yaml_source = File.read(file)
-    yaml_source = replace_environment_variables(yaml_source)
-
-    yaml = YAML.load(yaml_source)
+    yaml = load_yaml(file)
     yaml["merge"] ||= {}
 
     yaml["merge"].each do |filename|
       resolved_filename = File.expand_path('../' + filename, file)
-      yaml = deep_merge(yaml, YAML.load_file(resolved_filename))
+      yaml = deep_merge(yaml, load_yaml(resolved_filename))
     end
 
     ConfigFile.new(yaml, File.expand_path(file), options)
   end
 
   private
+
+  def load_yaml(filename)
+    yaml_source = File.read(file)
+    yaml_source = replace_environment_variables(yaml_source)
+
+    YAML.load(yaml_source)
+  end
 
   def replace_environment_variables(yaml_source)
     return yaml_source unless options[:env]
