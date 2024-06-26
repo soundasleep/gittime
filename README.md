@@ -54,7 +54,7 @@ sources:
     #   - \.github/
     #   - README.*
   -
-    svn: https://github.com/soundasleep/svntime
+    svn: https://svn.riouxsvn.com/gittime-example
   -
     xls: excel.xls
     # You can specify a fallback author if any field is empty:
