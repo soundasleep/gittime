@@ -33,7 +33,7 @@ def load_command_line_options
       options[:init] = true
     end
 
-    opts.on("-e", "--env FILE.YML", "Use environment variables from a secondary file") do
+    opts.on("-e", "--env FILE.YML", "Use environment variables from a secondary file") do |file|
       options[:env] = file
     end
 
