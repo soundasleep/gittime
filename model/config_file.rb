@@ -6,7 +6,7 @@ class ConfigFile
   class NoAuthorsDefinedError < StandardError; end
 
   def initialize(yaml, path, options)
-    fail "No sources defined" unless yaml["sources"]
+    fail "No sources defined in #{yaml}" unless yaml["sources"]
 
     @path = path
     @options = options

@@ -14,7 +14,8 @@ class ReadConfigFile
 
     yaml["merge"].each do |filename|
       resolved_filename = File.expand_path('../' + filename, file)
-      yaml = deep_merge(yaml, load_yaml(resolved_filename))
+      partial_yaml = load_yaml(resolved_filename)
+      yaml = deep_merge(yaml, partial_yaml)
     end
 
     ConfigFile.new(yaml, File.expand_path(file), options)
@@ -23,7 +24,7 @@ class ReadConfigFile
   private
 
   def load_yaml(filename)
-    yaml_source = File.read(file)
+    yaml_source = File.read(filename)
     yaml_source = replace_environment_variables(yaml_source)
 
     YAML.load(yaml_source)
