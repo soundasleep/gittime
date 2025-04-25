@@ -221,7 +221,7 @@ class Source
     first_row.each_with_index do |cell, cell_id|
       next if cell.nil?
 
-      if cell.match?(/(modified at|occurred at|publication date|pubdate)/i)
+      if cell.match?(/(modified at|occurred at|publication date|pubdate|last edited time)/i)
         columns[cell_id] = :author_date
       elsif cell.match?(/(performed by|created by|modified by|author|user)/i)
         columns[cell_id] = :author
