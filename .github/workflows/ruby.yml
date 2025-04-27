@@ -16,6 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install Subversion
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y subversion
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
