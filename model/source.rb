@@ -202,7 +202,7 @@ class Source
 
   def apply_fallbacks!(current_result)
     if current_result[:author].nil? || current_result[:author].empty?
-      current_result[:author] ||= fallback["author"]
+      current_result[:author] = fallback["author"]
     end
 
     current_result
@@ -283,11 +283,18 @@ class Source
         cal.events.each do |event|
           next unless event.dtstart && event.dtend
 
+          event_length = event.dtend.to_datetime - event.dtstart.to_datetime # in seconds
+
+          # don't include events that are longer than 12 hours, that's probably
+          # not a legitimate event to include, or something has broken.
+          # TODO add this as a config option
+          next if event_length.seconds > 12 * 60 * 60
+
           current_result = {
             id: event.uid,
             author: "#{event.organizer}", # force to_s for URI:MailTo
-            author_date: event.dtstart.to_time,
-            event_length: event.dtend.to_time - event.dtstart.to_time, # in seconds
+            author_date: strip_timezone(event.dtstart),
+            event_length: event_length,
             message: "#{event.summary} #{event.description}",
             source: self,
           }.merge(fixed_data)
@@ -323,6 +330,12 @@ class Source
   end
 
   private
+
+  # this is a horrible hack that strips the timezone information from
+  # a given datetime (which probably _does_ have timezone information)
+  def strip_timezone(time)
+    DateTime.parse(time.to_datetime.strftime("%Y-%m-%d %H:%M:%S +00:00"))
+  end
 
   def should_ignore?(result)
     return false if ignore_paths.empty?
