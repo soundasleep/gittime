@@ -32,7 +32,7 @@ sources:
     fixed:
       author: jevon.wright
   -
-    ical: https://example.com/calendar.ics
+    ical: https://raw.githubusercontent.com/soundasleep/gittime/refs/heads/main/spec/integration/sample.ics
     # With calendar events, you can ignore events that match any regexp in the message or description
     ignore:
       - christmas
