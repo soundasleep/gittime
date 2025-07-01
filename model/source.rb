@@ -281,9 +281,11 @@ class Source
     URI.open(ical) do |input|
       Icalendar::Calendar.parse(input).each do |cal|
         cal.events.each do |event|
+          next unless event.dtstart && event.dtend
+
           current_result = {
             id: event.uid,
-            author: event.organizer,
+            author: "#{event.organizer}", # force to_s for URI:MailTo
             author_date: event.dtstart.to_time,
             event_length: event.dtend.to_time - event.dtstart.to_time, # in seconds
             message: "#{event.summary} #{event.description}",
