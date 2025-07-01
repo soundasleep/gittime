@@ -33,9 +33,11 @@ sources:
       author: jevon.wright
   -
     ical: https://raw.githubusercontent.com/soundasleep/gittime/refs/heads/main/spec/integration/sample.ics
-    # With calendar events, you can ignore events that match any regexp in the message or description
-    ignore:
+    # With calendar events, you can ignore or require events that match any regexp in the message or description
+    only:
       - christmas
+    ignore:
+      - after
   # ... add more as necessary
 
 # Different sources may have different ways of expressing

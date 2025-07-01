@@ -294,6 +294,7 @@ class Source
 
           # should we skip this event?
           next if should_ignore?(current_result)
+          next unless should_include?(current_result)
 
           result << current_result
         end
@@ -322,8 +323,19 @@ class Source
   private
 
   def should_ignore?(result)
+    return false if ignore_paths.empty?
+
     all_components = "#{result[:id]} #{result[:author]} #{result[:author_date]} #{result[:message]}"
     ignore_paths.any? do |path_regex|
+      all_components.match?(path_regex)
+    end
+  end
+
+  def should_include?(result)
+    return true if only_paths.empty?
+
+    all_components = "#{result[:id]} #{result[:author]} #{result[:author_date]} #{result[:message]}"
+    only_paths.any? do |path_regex|
       all_components.match?(path_regex)
     end
   end

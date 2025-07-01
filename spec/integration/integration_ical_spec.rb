@@ -37,6 +37,14 @@ describe "integration", type: :integration do
           expect(lines).to eq 16 # exact
         end
       end
+
+      describe "with only filters" do
+        let(:config_filename) { "config.ical.with-only.yml" }
+
+        it "has calculated an exact number of events" do
+          expect(lines).to eq 4 # exact
+        end
+      end
     end
   end
 end
