@@ -7,8 +7,9 @@ class Source
   attr_reader :config_file
   attr_reader :options
 
-  attr_reader :git, :svn, :xls, :csv
+  attr_reader :git, :svn, :xls, :csv, :ical
   attr_reader :only_paths # filter only commits which touches one of these paths
+  attr_reader :ignore_paths # ignore ical events that match this filter anywhere
   attr_reader :name, :before, :after
   attr_reader :fixed, :fallback
 
@@ -20,14 +21,16 @@ class Source
     @svn = yaml["svn"]
     @xls = yaml["xls"]
     @csv = yaml["csv"]
+    @ical = yaml["ical"]
     @only_paths = yaml["only"] || []
+    @ignore_paths = yaml["ignore"] || []
     @name = yaml["name"] || label.split("/").last
     @before = seconds_in(yaml["before"]) || default_source.before
     @after = seconds_in(yaml["after"]) || default_source.after
     @fixed = yaml["fixed"] || {}
     @fallback = yaml["fallback"] || {}
 
-    fail "No source found for #{yaml}" unless git || svn || xls || csv
+    fail "No source found for #{yaml}" unless git || svn || xls || csv || ical
     fail "Cannot have <= 0 before seconds for #{yaml}" if @before <= 0
     fail "Cannot have <= 0 after seconds for #{yaml}" if @after <= 0
   end
@@ -42,6 +45,8 @@ class Source
         load_xls!
       elsif csv
         load_csv!
+      elsif ical
+        load_ical!
       else
         fail "Unknown source #{label}"
       end
@@ -268,6 +273,36 @@ class Source
     result
   end
 
+  def load_ical!
+    require "icalendar"
+    require "open-uri"
+
+    result = []
+    URI.open(ical) do |input|
+      Icalendar::Calendar.parse(input).each do |cal|
+        cal.events.each do |event|
+          current_result = {
+            id: event.uid,
+            author: event.organizer,
+            author_date: event.dtstart.to_time,
+            event_length: event.dtend.to_time - event.dtstart.to_time, # in seconds
+            message: "#{event.summary} #{event.description}",
+            source: self,
+          }.merge(fixed_data)
+
+          apply_fallbacks!(current_result)
+
+          # should we skip this event?
+          next if should_ignore?(current_result)
+
+          result << current_result
+        end
+      end
+    end
+
+    result
+  end
+
   def label
     if git
       "git:#{git}"
@@ -277,12 +312,21 @@ class Source
       "xls:#{xls}"
     elsif csv
       "csv:#{csv}"
+    elsif ical
+      "ical:#{ical}"
     else
       fail "Unknown source #{inspect}"
     end
   end
 
   private
+
+  def should_ignore?(result)
+    all_components = "#{result[:id]} #{result[:author]} #{result[:author_date]} #{result[:message]}"
+    ignore_paths.any? do |path_regex|
+      all_components.match?(path_regex)
+    end
+  end
 
   def possibly_cached_repository_path
     @possibly_cached_repository_path ||= if options[:cache]

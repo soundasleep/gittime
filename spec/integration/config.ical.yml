@@ -1,0 +1,9 @@
+sources:
+  -
+    ical: https://raw.githubusercontent.com/soundasleep/gittime/refs/heads/main/spec/integration/sample.ics
+    fixed:
+      author: jevon.wright
+
+authors:
+  jevon:
+    - jevon*

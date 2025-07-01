@@ -43,6 +43,7 @@ default_source:
 #   - svn
 #   - xls
 #   - csv
+#   - ical
 sources:
   -
     git: https://github.com/soundasleep/gittime
@@ -64,6 +65,11 @@ sources:
     csv: sample.csv
     fixed:
       author: jevon.wright
+  -
+    ical: https://example.com/calendar.ics
+    # With calendar events, you can ignore events that match any regexp in the message or description
+    ignore:
+      - christmas
   # ... add more as necessary
 
 # Different sources may have different ways of expressing

@@ -131,7 +131,13 @@ class GenerateReports
   end
 
   def print_revision_row(row)
-    [ row[:id], row[:author_label] || row[:author], print_date(row[:author_date]), row[:source].label, row[:message] ] + select_category_values_as_array(row)
+    [
+      row[:id],
+      row[:author_label] || row[:author],
+      print_date(row[:author_date]),
+      row[:source].label,
+      row[:message]
+    ] + select_category_values_as_array(row)
   end
 
   def select_category_values_as_array(row)
@@ -158,7 +164,7 @@ class GenerateReports
         else
           if row[:author_date] - row[:source].before.seconds < current_author_blocks[key][:end]
             # Extend the existing block
-            current_author_blocks[key][:end] = row[:author_date] + row[:source].after.seconds
+            current_author_blocks[key][:end] = author_block_row_event_end_time(row)
             current_author_blocks[key][:end_id] = row[:id]
             current_author_blocks[key][:end_source] = row[:source]
             current_author_blocks[key][:count] += 1
@@ -202,7 +208,15 @@ class GenerateReports
   end
 
   def print_block_by_month_row(row)
-    [ row[:id], print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:month], row[:year], row[:source] ] + select_category_values_as_array(row)
+    [
+      row[:id],
+      print_date(row[:start]),
+      print_date(row[:end]),
+      row[:author_label],
+      row[:month],
+      row[:year],
+      row[:source]
+    ] + select_category_values_as_array(row)
   end
 
   def in_local_tz(date)
@@ -251,7 +265,7 @@ class GenerateReports
     {
       id: @new_current_author_block_id,
       start: row[:author_date] - row[:source].before.seconds,
-      end: row[:author_date] + row[:source].after.seconds,
+      end: author_block_row_event_end_time(row),
       author_label: row[:author_label],
       start_id: row[:id],
       end_id: row[:id],
@@ -259,6 +273,14 @@ class GenerateReports
       end_source: row[:source],
       count: 1,
     }.merge(config_category_headers_empty_map)
+  end
+
+  def author_block_row_event_end_time(row)
+    if row[:event_length]
+      row[:author_date] + row[:event_length].seconds + row[:source].after.seconds
+    else
+      row[:author_date] + row[:source].after.seconds
+    end
   end
 
   def print_month(date)

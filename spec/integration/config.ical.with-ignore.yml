@@ -1,0 +1,11 @@
+sources:
+  -
+    ical: https://raw.githubusercontent.com/soundasleep/gittime/refs/heads/main/spec/integration/sample.ics
+    fixed:
+      author: jevon.wright
+    ignore:
+      - Christmas
+
+authors:
+  jevon:
+    - jevon*

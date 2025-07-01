@@ -10,6 +10,7 @@ gem 'tzinfo-data'
 gem 'deep_merge', :require => 'deep_merge/rails_compat'
 
 gem 'spreadsheet'
+gem 'icalendar'
 
 group :development, :test do
   gem 'rspec'
