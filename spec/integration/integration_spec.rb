@@ -9,6 +9,7 @@ describe "integration", type: :integration do
 
   let(:blocks) { result.select { |result| result[:filename] == "blocks.csv" }.only }
   let(:lines) { blocks[:data].size }
+  let(:authors) { result.select { |result| result[:filename] == "authors.csv" }.only[:data] }
 
   it "can be run against a repository" do
     expect(result).to_not eq nil
@@ -17,6 +18,7 @@ describe "integration", type: :integration do
     expect(filenames).to include "blocks.csv"
     expect(filenames).to include "blocks-by-month.csv"
     expect(filenames).to include "work-by-month.csv"
+    expect(filenames).to include "authors.csv"
   end
 
   it "has calculated at least ten blocks of work" do
@@ -38,6 +40,32 @@ describe "integration", type: :integration do
 
       it "has calculated at least ten blocks of work" do
         expect(lines).to be >= 10
+      end
+
+      describe "for sample config.init.yml" do
+        let(:config_filename) { "../../config.init.yml" }
+
+        it "can be run against a repository" do
+          expect(result).to_not eq nil
+          expect(filenames).to include "revisions.csv"
+          expect(filenames).to include "revisions-with-authors.csv"
+          expect(filenames).to include "blocks.csv"
+          expect(filenames).to include "blocks-by-month.csv"
+          expect(filenames).to include "work-by-month.csv"
+          expect(filenames).to include "authors.csv"
+        end
+
+        it "has calculated at least 5 authors" do
+          expect(authors.size).to be >= 5
+        end
+
+        let(:jevon_aliases) { authors.select { |row| row.first == "jevon" } }
+        it "has identified three different versions of 'jevon'" do
+          expect(jevon_aliases.size).to eq 3
+          expect(jevon_aliases[0]).to eq ["jevon", "Jevon Wright"]
+          expect(jevon_aliases[1]).to eq ["jevon", "jevon.wright"]
+          expect(jevon_aliases[2]).to eq ["jevon", "jevon@jevon.org"]
+        end
       end
 
       describe "with cache options" do
@@ -107,11 +135,16 @@ describe "integration", type: :integration do
           expect(filenames).to include "blocks.csv"
           expect(filenames).to include "blocks-by-month.csv"
           expect(filenames).to include "work-by-month.csv"
+          expect(filenames).to include "authors.csv"
         end
 
         it "has calculated at least four blocks of work" do
           # Should be the same as above
           expect(lines).to be >= 4
+        end
+
+        it "has calculated all authors, filtered and non-filtered" do
+          expect(authors.only).to eq ["jevon", "jevon@jevon.org"]
         end
       end
 
@@ -125,11 +158,16 @@ describe "integration", type: :integration do
           expect(filenames).to include "blocks.csv"
           expect(filenames).to include "blocks-by-month.csv"
           expect(filenames).to include "work-by-month.csv"
+          expect(filenames).to include "authors.csv"
         end
 
         it "has calculated zero blocks of work" do
           # However we're filtering against a committer that doesn't exist
           expect(lines).to eq 0
+        end
+
+        it "has calculated all authors, filtered and non-filtered" do
+          expect(authors.only).to eq ["jevon", "jevon@jevon.org"]
         end
       end
     end
@@ -144,6 +182,7 @@ describe "integration", type: :integration do
         expect(filenames).to include "blocks.csv"
         expect(filenames).to include "blocks-by-month.csv"
         expect(filenames).to include "work-by-month.csv"
+        expect(filenames).to include "authors.csv"
       end
 
       it "has calculated at least four blocks of work" do
@@ -162,6 +201,7 @@ describe "integration", type: :integration do
         expect(filenames).to include "blocks.csv"
         expect(filenames).to include "blocks-by-month.csv"
         expect(filenames).to include "work-by-month.csv"
+        expect(filenames).to include "authors.csv"
       end
 
       it "has calculated no more than three blocks of work" do
@@ -180,6 +220,7 @@ describe "integration", type: :integration do
         expect(filenames).to include "blocks.csv"
         expect(filenames).to include "blocks-by-month.csv"
         expect(filenames).to include "work-by-month.csv"
+        expect(filenames).to include "authors.csv"
       end
 
       it "has calculated category weightings for each report" do

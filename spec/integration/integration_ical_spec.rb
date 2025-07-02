@@ -24,17 +24,18 @@ describe "integration", type: :integration do
         expect(filenames).to include "blocks.csv"
         expect(filenames).to include "blocks-by-month.csv"
         expect(filenames).to include "work-by-month.csv"
+        expect(filenames).to include "authors.csv"
       end
 
       it "has calculated an exact number of events" do
-        expect(lines).to eq 20 # exact
+        expect(lines).to eq 22 # exact
       end
 
       describe "with ignore filters" do
         let(:config_filename) { "config.ical.with-ignore.yml" }
 
         it "has calculated an exact number of events" do
-          expect(lines).to eq 16 # exact
+          expect(lines).to eq 18 # exact
         end
       end
 

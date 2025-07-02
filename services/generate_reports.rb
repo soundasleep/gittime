@@ -21,6 +21,7 @@ class GenerateReports
     reports << write_report!("blocks.csv", BLOCKS_HEADERS + config_category_headers, blocks)
     reports << write_report!("blocks-by-month.csv", BLOCKS_BY_MONTHS_HEADERS + config_category_headers, blocks_by_month)
     reports << write_report!("work-by-month.csv", WORK_BY_MONTHS_HEADERS + config_category_headers, work_by_month)
+    reports << write_report!("authors.csv", AUTHORS_HEADERS, authors)
     reports
   end
 
@@ -48,6 +49,7 @@ class GenerateReports
   OTHER_CATEGORY = "other"
 
   REVISIONS_HEADERS = ["ID", "Author", "Date", "Source", "Message"]
+  AUTHORS_HEADERS = ["Author", "Original Author"]
 
   # A list of points of times
   def revisions
@@ -130,6 +132,22 @@ class GenerateReports
       .uniq { |row| [row[:author_label], row[:author_date].to_time.to_i] }
   end
 
+  # a list of all authors we found and their source author ID before selecting from config,
+  # and including all authors ignored by any 'only' filter
+  def authors
+    @authors ||= authors_data.map { |row| print_author_row(row) }
+  end
+
+  def authors_data
+    @authors_data ||= revisions_data.map do |row|
+      {
+        :author => config.select_author(row[:author]),
+        :original_author => row[:author]
+      }
+    end.uniq
+      .sort { |a, b| [ a[:author], a[:original_author] ] <=> [ b[:author], b[:original_author] ] }
+  end
+
   def print_revision_row(row)
     [
       row[:id],
@@ -138,6 +156,13 @@ class GenerateReports
       row[:source].label,
       row[:message]
     ] + select_category_values_as_array(row)
+  end
+
+  def print_author_row(row)
+    [
+      row[:author],
+      row[:original_author]
+    ]
   end
 
   def select_category_values_as_array(row)

@@ -23,9 +23,10 @@ Will generate the following files:
 | ----------- | ----------- |
 | `revisions.csv` | An unfiltered list of all data points (revisions) |
 | `revisions-with-authors.csv` | Filtered with `authors:` config below, and duplicate entries removed |
-| `blocks.csv` | `before` and `after` applied to each date, and contiguous blocks are merged; may span multiple months |
+| `blocks.csv` | Author-filtered revisions, `before` and `after` applied to each date, and contiguous blocks are merged; may span multiple months |
 | `blocks-by-month.csv` | Blocks split across month boundaries |
 | `work-by-month.csv` | The number of seconds in each block, per month and per author |
+| `authors.csv` | All identified authors, including any filtered out using any `authors:` config |
 
 ## Config file format
 
