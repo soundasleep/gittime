@@ -89,19 +89,6 @@ authors:
 #   authors:
 #     - jevon
 
-# For Git, xls, and csv sources, you can also categorise commits into categories.
-# Each path changed in a commit is matched against the first category match
-# found using path regexps, and given a (1.0/total number of paths changed)% weighting.
-# These categories are then added together into each generated report.
-categories:
-  test:
-    - spec
-  config:
-    - config.*yml
-  docs:
-    - README
-  # an 'other' category will capture everything else
-
 # For more complex setups, you can merge multiple files together.
 # Each file is loaded and deep merged, but has the same schema as your config.yml.
 # merge:
@@ -143,20 +130,6 @@ authors:
   jevon:
     - ${{ username }}.*
 ```
-
-### Categories example
-
-Using the "test", "config", and "docs" categories in the sample config above against the
-[gittime](https://github.com/soundasleep/gittime) repository can result in:
-
-| Month starting | Author | Blocks | test % | config % | docs % | other % |
-|---|---|---|---|---|---|---|
-| 2021-11-01 | jevon | 4 | 8.1% | 4.0% | 10.0% | 77.9% |
-| 2022-01-01 | jevon | 1 | 0% | 0% | 0% | 100% |
-| 2022-05-01 | jevon | 1 | 34.7% | 5.3% | 22.0% | 38.0% |
-
-Showing that [in the month of November 2021](https://github.com/soundasleep/gittime/commits?since=2021-11-01&until=2021-11-30),
-~8% was commits touched paths relating to tests, 4% to config, 10% to docs, and ~78% were uncategorised.
 
 ## Testing
 

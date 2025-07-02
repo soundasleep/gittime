@@ -16,11 +16,11 @@ class GenerateReports
     FileUtils.mkdir_p(report_path("."))
 
     reports = []
-    reports << write_report!("revisions.csv", REVISIONS_HEADERS + config_category_headers, revisions)
-    reports << write_report!("revisions-with-authors.csv", REVISIONS_HEADERS + config_category_headers, revisions_with_authors)
-    reports << write_report!("blocks.csv", BLOCKS_HEADERS + config_category_headers, blocks)
-    reports << write_report!("blocks-by-month.csv", BLOCKS_BY_MONTHS_HEADERS + config_category_headers, blocks_by_month)
-    reports << write_report!("work-by-month.csv", WORK_BY_MONTHS_HEADERS + config_category_headers, work_by_month)
+    reports << write_report!("revisions.csv", REVISIONS_HEADERS, revisions)
+    reports << write_report!("revisions-with-authors.csv", REVISIONS_HEADERS, revisions_with_authors)
+    reports << write_report!("blocks.csv", BLOCKS_HEADERS, blocks)
+    reports << write_report!("blocks-by-month.csv", BLOCKS_BY_MONTHS_HEADERS, blocks_by_month)
+    reports << write_report!("work-by-month.csv", WORK_BY_MONTHS_HEADERS, work_by_month)
     reports << write_report!("authors.csv", AUTHORS_HEADERS, authors)
     reports
   end
@@ -42,12 +42,6 @@ class GenerateReports
     File.join(File.dirname(config.path), options[:output], file)
   end
 
-  def config_category_headers
-    config.categories.map { |key, _| "#{key} %" } + ["#{OTHER_CATEGORY} %"]
-  end
-
-  OTHER_CATEGORY = "other"
-
   REVISIONS_HEADERS = ["ID", "Author", "Date", "Source", "Message"]
   AUTHORS_HEADERS = ["Author", "Original Author"]
 
@@ -64,57 +58,6 @@ class GenerateReports
           revision
         end
         .sort { |a, b| [a[:author_date], a[:source].label] <=> [b[:author_date], b[:source].label] }
-        .map do |revision|
-          revision.merge(populate_revision_categories(revision))
-        end
-  end
-
-  def config_category_headers_empty_map
-    result = {}
-    config_category_headers.each do |label|
-      result[label] = 0
-    end
-    result
-  end
-
-  def select_category_values_as_map(row)
-    result = {}
-    config_category_headers.each do |label|
-      result[label] = row[label]
-    end
-    result
-  end
-
-  def populate_revision_categories(revision)
-    result = config_category_headers_empty_map
-
-    if revision[:paths] && !revision[:paths].empty?
-      # we weight revisions based on the % of paths that match each category
-      if !revision[:paths].is_a?(Array)
-        revision[:paths] = [revision[:paths]]
-      end
-
-      one_path_percent = 1.0 / revision[:paths].size
-      revision[:paths].each do |path|
-        category = select_category_for(path)
-        result["#{category} %"] += one_path_percent
-      end
-    else
-      # we mark every category, other than 'other %', as 0.
-      result["#{OTHER_CATEGORY} %"] = 1.0
-    end
-
-    result
-  end
-
-  def select_category_for(path)
-    config.categories.each do |key, values|
-      values.each do |regexp|
-        return key if path.match?(regexp)
-      end
-    end
-
-    return OTHER_CATEGORY
   end
 
   # A list of revisions with mapped authors, and duplicate rows removed
@@ -155,7 +98,7 @@ class GenerateReports
       print_date(row[:author_date]),
       row[:source].label,
       row[:message]
-    ] + select_category_values_as_array(row)
+    ]
   end
 
   def print_author_row(row)
@@ -163,10 +106,6 @@ class GenerateReports
       row[:author],
       row[:original_author]
     ]
-  end
-
-  def select_category_values_as_array(row)
-    config_category_headers.map { |label| row[label] }
   end
 
   BLOCKS_HEADERS = ["ID", "Start date", "End date", "Author", "Start ID", "End ID", "Start Source", "End Source", "Revisions"]
@@ -199,7 +138,6 @@ class GenerateReports
             current_author_blocks[key] = new_current_author_block(row)
           end
         end
-        add_categorised_revisions_to_block!(current_author_blocks[key], row)
       end
 
       # Finally if there are any pending blocks, add them in
@@ -209,20 +147,6 @@ class GenerateReports
 
       result
     end.sort { |a, b| [a[:author_label], a[:start]] <=> [b[:author_label], b[:start]] }
-  end
-
-  def add_categorised_revisions_to_block!(current_block, row)
-    if current_block[:count] > 1
-      # Un-weight existing values based on how many commits there were _before_ this block
-      config_category_headers.each do |key|
-        current_block[key] *= (current_block[:count] - 1)
-      end
-    end
-    config_category_headers.each do |key|
-      current_block[key] += row[key]
-      # And now re-weight, giving each commit equal weighting
-      current_block[key] /= current_block[:count]
-    end
   end
 
   BLOCKS_BY_MONTHS_HEADERS = ["ID", "Start date", "End date", "Author", "Month", "Year", "Source block ID"]
@@ -241,7 +165,7 @@ class GenerateReports
       row[:month],
       row[:year],
       row[:source]
-    ] + select_category_values_as_array(row)
+    ]
   end
 
   def in_local_tz(date)
@@ -253,8 +177,6 @@ class GenerateReports
       id = 0
       result = []
       blocks_data.each do |block|
-        category_data = select_category_values_as_map(block)
-
         while print_month(block[:start]) != print_month(block[:end])
           id += 1
           result << {
@@ -265,7 +187,7 @@ class GenerateReports
             month: in_local_tz(block[:start]).strftime("%-m"),
             year: in_local_tz(block[:start]).strftime("%Y"),
             source: block[:id],
-          }.merge(category_data)
+          }
           block[:start] = (block[:start].end_of_month + 1.day).beginning_of_month
         end
         id += 1
@@ -277,7 +199,7 @@ class GenerateReports
           month: in_local_tz(block[:start]).strftime("%-m"),
           year: in_local_tz(block[:start]).strftime("%Y"),
           source: block[:id],
-        }.merge(category_data)
+        }
       end
       result
     end.sort { |a, b| [a[:author_label], a[:start]] <=> [b[:author_label], b[:start]] }
@@ -297,7 +219,7 @@ class GenerateReports
       start_source: row[:source],
       end_source: row[:source],
       count: 1,
-    }.merge(config_category_headers_empty_map)
+    }
   end
 
   def author_block_row_event_end_time(row)
@@ -313,7 +235,7 @@ class GenerateReports
   end
 
   def print_block_row(row)
-    [ row[:id], print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ] + select_category_values_as_array(row)
+    [ row[:id], print_date(row[:start]), print_date(row[:end]), row[:author_label], row[:start_id], row[:end_id], row[:start_source].label, row[:end_source].label, row[:count] ]
   end
 
   WORK_BY_MONTHS_HEADERS = ["ID", "Month starting", "Author", "Seconds", "Blocks", "Start date", "End date"]
@@ -324,7 +246,7 @@ class GenerateReports
   end
 
   def print_work_by_month_row(row)
-    [ row[:id], print_date(row[:start].beginning_of_month), row[:author_label], row[:seconds], row[:blocks], print_date(row[:start]), print_date(row[:end]) ] + select_category_values_as_array(row)
+    [ row[:id], print_date(row[:start].beginning_of_month), row[:author_label], row[:seconds], row[:blocks], print_date(row[:start]), print_date(row[:end]) ]
   end
 
   def work_by_month_data
@@ -347,7 +269,6 @@ class GenerateReports
             current_work_blocks[key] = new_current_work_block(block)
           end
         end
-        add_categorised_revisions_to_work_block!(current_work_blocks[key], block)
       end
 
       current_work_blocks.each do |_, row|
@@ -369,21 +290,7 @@ class GenerateReports
       author_label: block[:author_label],
       seconds: block_seconds(block),
       blocks: 1,
-    }.merge(config_category_headers_empty_map)
-  end
-
-  def add_categorised_revisions_to_work_block!(current_block, row)
-    if current_block[:blocks] > 1
-      # Un-weight existing values based on how many commits there were _before_ this block
-      config_category_headers.each do |key|
-        current_block[key] *= (current_block[:blocks] - 1)
-      end
-    end
-    config_category_headers.each do |key|
-      current_block[key] += row[key]
-      # And now re-weight, giving each commit equal weighting
-      current_block[key] /= current_block[:blocks]
-    end
+    }
   end
 
   def block_seconds(block)

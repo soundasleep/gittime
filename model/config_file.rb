@@ -1,5 +1,5 @@
 class ConfigFile
-  attr_reader :sources, :authors, :default_source, :categories, :only_filters
+  attr_reader :sources, :authors, :default_source, :only_filters
   attr_reader :path
   attr_reader :options
 
@@ -20,7 +20,6 @@ class ConfigFile
       Source.new(row, self, @default_source, options)
     end
     @authors = yaml["authors"] or raise NoAuthorsDefinedError.new("no authors defined in config: '#{yaml}'")
-    @categories = yaml["categories"] || {}
     @only_filters = yaml["only"] || {}
   end
 

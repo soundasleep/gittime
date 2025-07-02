@@ -73,21 +73,6 @@ class Source
     false
   end
 
-  def git_commit_paths(commit_hash)
-    return [] unless config_file.categories.any?
-
-    result = []
-    stream_command("#{git_list_paths_command(commit_hash)}") do |stat_line|
-      tab_split = stat_line.split("\t", 3)
-
-      if tab_split[0].match?(/\A[0-9]+\Z/)
-        result << tab_split[2]
-      end
-    end
-
-    result
-  end
-
   def load_git!
     LOG.info "Cloning #{git} into #{possibly_cached_repository_path}..."
     result = []
@@ -111,7 +96,6 @@ class Source
             committer: csv[3],
             committer_date: DateTime.parse(csv[4]),
             message: csv[5],
-            paths: git_commit_paths(commit_hash),
             source: self,
           }.merge(fixed_data)
 
