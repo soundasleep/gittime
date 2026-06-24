@@ -2,7 +2,7 @@ require "chronic_duration"
 
 module SecondsHelper
   def seconds_in(string)
-    return nil if string.blank?
+    return nil if string.nil? || string.blank?
     ChronicDuration::parse(string)
   end
 

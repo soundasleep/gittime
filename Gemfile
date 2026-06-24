@@ -11,6 +11,7 @@ gem 'deep_merge', :require => 'deep_merge/rails_compat'
 
 gem 'spreadsheet'
 gem 'icalendar'
+gem 'csv'
 
 group :development, :test do
   gem 'rspec'
